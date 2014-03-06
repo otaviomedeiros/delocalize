@@ -50,7 +50,7 @@ ActiveRecord::Base.class_eval do
         # be typecast back to 0 (''.to_i => 0)
         value = nil
       elsif column.number?
-        value = column.type_cast(convert_number_column_value_with_localization(value))
+        value = column.type_cast(column.type_cast_for_write_with_localization(value))
       else
         value = column.type_cast(value)
       end
