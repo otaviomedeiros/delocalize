@@ -18,6 +18,15 @@ ActiveRecord::ConnectionAdapters::Column.class_eval do
   end
 end
 
+ActiveRecord::ConnectionAdapters::Column.class_eval do
+  def type_cast_for_write_with_localization(value)
+    value = type_cast_for_write_without_localization(value)
+    value = Numeric.parse_localized(value) if I18n.delocalization_enabled?
+    value
+  end
+  alias_method_chain :type_cast_for_write, :localization
+end
+
 ActiveRecord::Base.class_eval do
   def write_attribute_with_localization(attr_name, original_value)
     new_value = original_value
@@ -31,14 +40,6 @@ ActiveRecord::Base.class_eval do
     write_attribute_without_localization(attr_name, new_value)
   end
   alias_method_chain :write_attribute, :localization
-
-  def convert_number_column_value_with_localization(value)
-    value = convert_number_column_value_without_localization(value)
-    value = Numeric.parse_localized(value) if I18n.delocalization_enabled?
-    value
-  end
-  alias_method_chain :convert_number_column_value, :localization
-
 
   define_method( (Gem::Version.new(ActiveRecord::VERSION::STRING) < Gem::Version.new('3.2.9')) ? :field_changed? : :_field_changed? ) do |attr, old, value|
     if column = column_for_attribute(attr)
