@@ -20,6 +20,8 @@ end
 
 ActiveRecord::ConnectionAdapters::Column.class_eval do
   def type_cast_for_write_with_localization(value)
+    return value unless number?
+    
     value = type_cast_for_write_without_localization(value)
     value = Numeric.parse_localized(value) if I18n.delocalization_enabled?
     value
